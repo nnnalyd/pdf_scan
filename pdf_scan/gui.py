@@ -3,8 +3,7 @@ from tkinter import messagebox, filedialog
 import os
 
 def submit():
-    global customer_name, file_path, excel_path
-    customer_name = entry.get()
+    global file_path, excel_path
     file_path = file_entry.get()
     excel_path = excel_entry.get()
     
@@ -12,7 +11,7 @@ def submit():
         messagebox.showerror("Error", "Please select a valid folder.")
         return
 
-    messagebox.showinfo("Customer Name", f"Entered Name: {customer_name}\nSelected Folder: {file_path}")
+    messagebox.showinfo("Customer Name", f"Selected Folder: {file_path}")
     root.quit()
 
 
@@ -30,14 +29,6 @@ def browse_excel():
 root = tk.Tk()
 root.title("Customer Name and PDF Input")
 root.geometry("600x400")
-
-# Create a label
-label = tk.Label(root, text="Enter Customer Name:")
-label.pack(pady=5)
-
-# Create an entry widget
-entry = tk.Entry(root, width=40)
-entry.pack(pady=5)
 
 # Create a file input label and entry
 file_label = tk.Label(root, text="Select a folder:")
@@ -65,4 +56,4 @@ root.mainloop()
 
 # Return values for use in another Python file
 def get_customer_details():
-    return customer_name, file_path, excel_path
+    return file_path, excel_path

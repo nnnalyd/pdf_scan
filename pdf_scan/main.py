@@ -110,7 +110,7 @@ def extracts(dir, dir_str) -> dict:
             ordMatched, ordNumber = order_number(line, results, previous_line, two_lines_ago)
             if code_qty(line, results) or ordMatched:
                 ord_lines.append(results)
-                
+            results["CustomerName"] = os.path.splitext(os.path.basename(pdf_path))[0]
             two_lines_ago = previous_line
             previous_line = line
 
@@ -123,7 +123,7 @@ def extracts(dir, dir_str) -> dict:
 
     
 def main() -> None:
-    customer_name, files_path, excel_path = gui.get_customer_details()
+    files_path, excel_path = gui.get_customer_details()
     directory = os.fsencode(files_path)
 
     existing_file = f'{excel_path}'
@@ -138,9 +138,11 @@ def main() -> None:
         for entry in ord_lines:
             if 'PONumber' in entry:
                 current_po = entry['PONumber'] 
+            if 'CustomerName' in entry:
+                current_cn = entry['CustomerName']
             if 'code' in entry and 'qty' in entry:
                 final_rows.append({
-                    'CustomerName' : customer_name,
+                    'CustomerName' : current_cn,
                     'PONumber': current_po,
                     'Code': entry['code'],
                     'Qty': entry['qty']
