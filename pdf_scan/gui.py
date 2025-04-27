@@ -1,21 +1,25 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
+import os
 
 def submit():
     global customer_name, file_path, excel_path
     customer_name = entry.get()
     file_path = file_entry.get()
     excel_path = excel_entry.get()
-    if not file_path.endswith(".pdf"):
-        messagebox.showerror("Error", "Please select a valid PDF file.")
+    
+    if not os.path.isdir(file_path):
+        messagebox.showerror("Error", "Please select a valid folder.")
         return
-    messagebox.showinfo("Customer Name", f"Entered Name: {customer_name}\nSelected File: {file_path}")
+
+    messagebox.showinfo("Customer Name", f"Entered Name: {customer_name}\nSelected Folder: {file_path}")
     root.quit()
 
+
 def browse_file():
-    file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+    folder_path = filedialog.askdirectory()
     file_entry.delete(0, tk.END)
-    file_entry.insert(0, file_path)
+    file_entry.insert(0, folder_path)
 
 def browse_excel():
     excel_path = filedialog.askopenfilename(filetypes=[("Excel Files", "*.xlsx")])
@@ -36,7 +40,7 @@ entry = tk.Entry(root, width=40)
 entry.pack(pady=5)
 
 # Create a file input label and entry
-file_label = tk.Label(root, text="Select a PDF File:")
+file_label = tk.Label(root, text="Select a folder:")
 file_label.pack(pady=5)
 file_entry = tk.Entry(root, width=40)
 file_entry.pack(pady=5)
