@@ -149,6 +149,7 @@ def main() -> None:
                 })
 
     df = pd.DataFrame(final_rows, columns=['CustomerName', 'PONumber', 'Code', 'Qty'])
+    df["Code"] = df["Code"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
 
     print(df)
 
