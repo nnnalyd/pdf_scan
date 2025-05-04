@@ -151,8 +151,8 @@ def main() -> None:
                 current_cn = entry['CustomerName']
             if 'code' in entry and 'qty' in entry:
                 final_rows.append({
-                    'CustomerName' : current_cn,
                     'PONumber': current_po,
+                    'CustomerName' : current_cn,
                     'Code': entry['code'],
                     'Qty': entry['qty']
                 })
