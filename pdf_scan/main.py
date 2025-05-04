@@ -121,6 +121,15 @@ def extracts(dir, dir_str) -> dict:
 
     return frames
 
+def convert_codes(codes):
+    data_dict = {}
+    with open(codes, "r") as f:
+        lines = f.readlines()
+        for line in lines:
+            lhs, rhs = line.strip().split("\t")  # Assuming tab-separated values
+            data_dict[lhs] = rhs
+
+    return data_dict
     
 def main() -> None:
     files_path, excel_path = gui.get_customer_details()
@@ -150,6 +159,9 @@ def main() -> None:
 
     df = pd.DataFrame(final_rows, columns=['CustomerName', 'PONumber', 'Code', 'Qty'])
     df["Code"] = df["Code"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
+    code_dict = convert_codes("pdf_scan/convert.txt")
+
+    df["Code"] = df["Code"].replace(code_dict)
 
     print(df)
 
