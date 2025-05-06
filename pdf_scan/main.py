@@ -3,6 +3,7 @@ import pdfplumber
 import re
 import pandas as pd
 import gui
+import datetime
 
 
 # patterns
@@ -110,7 +111,12 @@ def extracts(dir, dir_str) -> dict:
             ordMatched, ordNumber = order_number(line, results, previous_line, two_lines_ago)
             if code_qty(line, results) or ordMatched:
                 ord_lines.append(results)
-            results["CustomerName"] = os.path.splitext(os.path.basename(pdf_path))[0]
+
+            customer_name = os.path.splitext(os.path.basename(pdf_path))[0]
+            fn, ln = convert_names('pdf_scan/nameconversion.xlsx', customer_name)
+            results['First Name'] = fn
+            results['Last Name'] = ln
+
             two_lines_ago = previous_line
             previous_line = line
 
@@ -126,11 +132,21 @@ def convert_codes(codes):
     with open(codes, "r") as f:
         lines = f.readlines()
         for line in lines:
-            lhs, rhs = line.strip().split("\t")  # Assuming tab-separated values
+            lhs, rhs = line.strip().split("\t")
             data_dict[lhs] = rhs
 
     return data_dict
-    
+
+def convert_names(names_path, cust_name):
+    df = pd.read_excel(names_path)
+    print(cust_name)
+    match = df[df['File name'] == cust_name]
+
+    fn = match['First Name'].values[0] if not match.empty else None
+    ln = match['Last Name'].values[0] if not match.empty else None
+
+    return fn, ln
+
 def main() -> None:
     files_path, excel_path = gui.get_customer_details()
     directory = os.fsencode(files_path)
@@ -147,17 +163,21 @@ def main() -> None:
         for entry in ord_lines:
             if 'PONumber' in entry:
                 current_po = entry['PONumber'] 
-            if 'CustomerName' in entry:
-                current_cn = entry['CustomerName']
+            if 'First Name' in entry:
+                current_fn = entry['First Name']
+            if 'Last Name' in entry:
+                current_ln = entry['Last Name']
             if 'code' in entry and 'qty' in entry:
                 final_rows.append({
-                    'PONumber': current_po,
-                    'CustomerName' : current_cn,
+                    'PoNo': current_po,
+                    'First Name': current_fn,
+                    'Last Name': current_ln,
+                    'podate': datetime.datetime.now().strftime("%Y-%m-%d"),
                     'Code': entry['code'],
                     'Qty': entry['qty']
                 })
 
-    df = pd.DataFrame(final_rows, columns=['CustomerName', 'PONumber', 'Code', 'Qty'])
+    df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'podate', 'Code', 'Qty'])
     df["Code"] = df["Code"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
     code_dict = convert_codes("pdf_scan/convert.txt")
 
