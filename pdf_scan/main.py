@@ -173,11 +173,11 @@ def main() -> None:
                     'First Name': current_fn,
                     'Last Name': current_ln,
                     'podate': datetime.datetime.now().strftime("%Y-%m-%d"),
-                    'Code': entry['code'],
+                    'SKU': entry['code'],
                     'Qty': entry['qty']
                 })
 
-    df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'podate', 'Code', 'Qty'])
+    df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'custnotes', 'podate', 'SKU', 'Qty', 'UOM', 'Price', 'Discount', 'Vat'])
     df["Code"] = df["Code"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
     code_dict = convert_codes("pdf_scan/convert.txt")
 
