@@ -174,7 +174,7 @@ def main() -> None:
                     'Last Name': current_ln,
                     'podate': datetime.datetime.now().strftime("%Y-%m-%d"),
                     'SKU': entry['code'],
-                    'Qty': entry['qty']
+                    'Quantity': entry['qty']
                 })
 
     df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'custnotes', 'podate', 'SKU', 'Quantity', 'UOM', 'Price', 'Discount', 'Vat'])
