@@ -177,7 +177,7 @@ def main() -> None:
                     'Quantity': entry['qty']
                 })
 
-    df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'custnotes', 'podate', 'SKU', 'Quantity', 'UOM', 'Price', 'Discount', 'Vat'])
+    df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'podate', 'custnotes', 'SKU', 'Quantity', 'UOM', 'Price', 'Discount', 'Vat'])
     df["SKU"] = df["SKU"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
     code_dict = convert_codes("pdf_scan/convert.txt")
 
