@@ -127,15 +127,11 @@ def extracts(dir, dir_str) -> dict:
 
     return frames
 
-def convert_codes(codes):
-    data_dict = {}
-    with open(codes, "r") as f:
-        lines = f.readlines()
-        for line in lines:
-            lhs, rhs = line.strip().split("\t")
-            data_dict[lhs] = rhs
-
-    return data_dict
+def convert_codes(code):
+    df = pd.read_excel('pdf_scan/codeconversion.xlsx')
+    match = df[df['From'] == code]
+    converted = match['To'].values[0] if not match.empty else None
+    return converted
 
 def convert_names(names_path, cust_name):
     df = pd.read_excel(names_path)
@@ -179,9 +175,7 @@ def main() -> None:
 
     df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'podate', 'custnotes', 'SKU', 'Quantity', 'UOM', 'Price', 'Discount', 'Vat'])
     df["SKU"] = df["SKU"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
-    code_dict = convert_codes("pdf_scan/convert.txt")
-
-    df["SKU"] = df["SKU"].replace(code_dict)
+    df["SKU"] = df["SKU"].apply(lambda x: convert_codes(x) if convert_codes(x) else x)
 
     print(df)
 
