@@ -26,7 +26,7 @@ order_header_pattern = re.compile(r'(Order\s+Number|Order\s+No\.?|P\.O\.\s*No\.?
 
 # functions
 
-def feed_rows(x: int, fieldName: str) -> list:
+def feed_rows(x: int, fieldName: str) -> dict:
     dict = []
     for i in range(x):
         dict.append(fieldName)
@@ -47,9 +47,8 @@ def extract_lines_from_pdf(pdf_path):
 def code_qty(line, results):
     """Extract code and quantity from a line."""
     pattern = re.compile(
-        r'(?P<qty1>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))\s+(?:.+?\s+)?(?P<code1>\b\d{5}\b|\b\d{5}[A-Za-z]\b|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)'
-        r'|\b(?P<code2>\d{5}|\d{5}[A-Za-z]|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)\b\s+(?:.+?\s+)?(?P<qty2>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))'
-        r'|(?P<qty1>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))\s+(?:.+?\s+)?(?P<code1>TBC|HSREAP)'
+        r'(?P<qty1>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))\s+(?:.+?\s+)?(?P<code1>\b\d{5}\b|\b\d{5}[A-Za-z]\b|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)'
+        r'|\b(?P<code2>\d{5}|\d{5}[A-Za-z]|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)\b\s+(?:.+?\s+)?(?P<qty2>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))'
     )
     match = pattern.search(line)
     if match:
@@ -91,7 +90,7 @@ def order_number(line, results, previous_line=None, two_lines_ago=None) -> tuple
 
     return matched, number
 
-def extracts(dir, dir_str):
+def extracts(dir, dir_str) -> dict:
     """Main extraction loop over all PDF files."""
     frames = []
 
@@ -136,6 +135,7 @@ def convert_codes(code):
 
 def convert_names(names_path, cust_name):
     df = pd.read_excel(names_path)
+    print(cust_name)
     match = df[df['File name'] == cust_name]
 
     fn = match['First Name'].values[0] if not match.empty else None
@@ -174,17 +174,8 @@ def main() -> None:
                 })
 
     df = pd.DataFrame(final_rows, columns=['PoNo', 'First Name', 'Last Name', 'podate', 'custnotes', 'SKU', 'Quantity', 'UOM', 'Price', 'Discount', 'Vat'])
-    def safe_convert_code(x):
-        # Don't convert TBC or HSREAP
-        if x in ("TBC", "HSREAP"):
-            return x
-        # Add prefix if needed
-        if len(x) == 5 or len(x) == 6:
-            x = f"{x[:2]}:{x}"
-        converted = convert_codes(x)
-        return converted if converted else "ERROR"
-
-    df["SKU"] = df["SKU"].apply(safe_convert_code)
+    df["SKU"] = df["SKU"].apply(lambda x: f"{x[:2]}:{x}" if (len(x) == 5 or len(x) == 6) else x)
+    df["SKU"] = df["SKU"].apply(lambda x: convert_codes(x) if convert_codes(x) else x)
 
     print(df)
 
