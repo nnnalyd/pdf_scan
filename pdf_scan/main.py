@@ -26,11 +26,11 @@ order_header_pattern = re.compile(r'(Order\s+Number|Order\s+No\.?|P\.O\.\s*No\.?
 
 # functions
 
-def feed_rows(x: int, fieldName: str) -> dict:
-    dict = []
+def feed_rows(x: int, fieldName: str) -> list:
+    list = []
     for i in range(x):
-        dict.append(fieldName)
-    return dict
+        list.append(fieldName)
+    return list
 
 def extract_lines_from_pdf(pdf_path):
     """Extract lines from first page of PDF."""
@@ -49,11 +49,15 @@ def code_qty(line, results):
     pattern = re.compile(
         r'(?P<qty1>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))\s+(?:.+?\s+)?(?P<code1>\b\d{5}\b|\b\d{5}[A-Za-z]\b|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)'
         r'|\b(?P<code2>\d{5}|\d{5}[A-Za-z]|[0-9]{3}:[0-9]{2}:[0-9]{2}|[0-9]{4}:[0-9]{2}:[0-9]{2}|[0-9]{2}:[0-9]{5}[A-Za-z]?)\b\s+(?:.+?\s+)?(?P<qty2>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))'
+        r'|(?P<qty3>(?<![\w/:-])\b\d{1,4}\b(?![\w/:-]))\s+(?:.+?\s+)?(?P<code3>TBC|HSREAP)\b'
     )
     match = pattern.search(line)
     if match:
-        qty = int(match.group("qty1") or match.group("qty2"))
-        code = match.group("code1") or match.group("code2")
+        print(match.groups())
+        qty = int(match.group("qty1") or match.group("qty2") or match.group("qty3"))
+        code = match.group("code1") or match.group("code2") or match.group("code3")
+        if match.group("code3"):
+            code = "ERROR"
         results["qty"] = qty
         results["code"] = code
         return True
@@ -90,7 +94,7 @@ def order_number(line, results, previous_line=None, two_lines_ago=None) -> tuple
 
     return matched, number
 
-def extracts(dir, dir_str) -> dict:
+def extracts(dir, dir_str) -> list:
     """Main extraction loop over all PDF files."""
     frames = []
 
