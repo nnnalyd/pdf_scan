@@ -1,11 +1,11 @@
 import os
 import pdfplumber
 import re
-import pandas as pd
+import sys
 import gui
+import pandas as pd
 import datetime
-
-
+    
 # patterns
 item_code_pattern = re.compile(r'\b(?:\d{5}|\d{5}[A-Za-z]|[0-9]{2}:[0-9]{5}|[0-9]{2}:[0-9]{5}[A-Za-z])\b')
 order_pattern_inline = re.compile(
@@ -25,6 +25,14 @@ order_pattern_inline = re.compile(
 order_header_pattern = re.compile(r'(Order\s+Number|Order\s+No\.?|P\.O\.\s*No\.?|P\.O\.|Purchase\s+Order|Document\s+Number)', re.I)
 
 # functions
+
+
+def local_path(filename):
+    if getattr(sys, 'frozen', False):  # running as compiled .exe
+        base_path = os.path.dirname(sys.executable)
+    else:  # running as a .py script
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, filename)
 
 def feed_rows(x: int, fieldName: str) -> list:
     list = []
@@ -117,7 +125,7 @@ def extracts(dir, dir_str) -> list:
                 ord_lines.append(results)
 
             customer_name = os.path.splitext(os.path.basename(pdf_path))[0]
-            fn, ln = convert_names('pdf_scan/nameconversion.xlsx', customer_name)
+            fn, ln = convert_names(local_path('nameconversion.xlsx'), customer_name)
             results['First Name'] = fn
             results['Last Name'] = ln
 
@@ -132,7 +140,7 @@ def extracts(dir, dir_str) -> list:
     return frames
 
 def convert_codes(code):
-    df = pd.read_excel('pdf_scan/codeconversion.xlsx')
+    df = pd.read_excel(local_path('codeconversion.xlsx'))
     match = df[df['From'] == code]
     converted = match['To'].values[0] if not match.empty else None
     return converted
